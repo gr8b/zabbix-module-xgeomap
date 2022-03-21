@@ -1,0 +1,19 @@
+{
+	"manifest_version": 1,
+	"id": "extended-geomap",
+	"name": "Extended Geomap",
+	"author": "",
+	"description": "Geo map widget with hosts linked to other widgets.",
+	"version": "1.0",
+	"namespace": "ExtendedGeoMapWidget",
+	"url": "",
+	"require": {
+        "zabbix": "^6.0"
+    },
+	"actions": {
+		"geomap.linked.widgets": {
+			"class": "MenuPopupExtendedAction",
+			"layout": "layout.json"
+		}
+	}
+}
