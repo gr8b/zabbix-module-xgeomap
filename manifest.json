@@ -11,9 +11,10 @@
         "zabbix": "^6.0"
     },
 	"actions": {
-		"geomap.linked.widgets": {
-			"class": "MenuPopupExtendedAction",
-			"layout": "layout.json"
+		"widget.geomap.view": {
+			"class": "GeomapViewAction",
+			"view": "monitoring.widget.geomap.view",
+			"layout": "layout.widget"
 		}
 	}
 }
