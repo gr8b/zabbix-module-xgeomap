@@ -9,6 +9,8 @@ use CControllerWidgetGeoMapView;
 use CSpan;
 use CTableInfo;
 use CSeverityHelper;
+use CWebUser;
+use CRoleHelper;
 
 class GeomapViewAction extends CControllerWidgetGeoMapView {
 
@@ -81,6 +83,13 @@ class GeomapViewAction extends CControllerWidgetGeoMapView {
 		}
 
 		$hostids_tables = [];
+		$allowed = [
+			'ui_problems' => CWebUser::checkAccess(CRoleHelper::UI_MONITORING_PROBLEMS),
+			'add_comments' => CWebUser::checkAccess(CRoleHelper::ACTIONS_ADD_PROBLEM_COMMENTS),
+			'change_severity' => CWebUser::checkAccess(CRoleHelper::ACTIONS_CHANGE_SEVERITY),
+			'acknowledge' => CWebUser::checkAccess(CRoleHelper::ACTIONS_ACKNOWLEDGE_PROBLEMS),
+			'close' => CWebUser::checkAccess(CRoleHelper::ACTIONS_CLOSE_PROBLEMS)
+		];
 
 		foreach ($hostids_problems as $hostid => $problems) {
 			if (!array_key_exists($hostid, $hostids_tables)) {
@@ -118,14 +127,26 @@ class GeomapViewAction extends CControllerWidgetGeoMapView {
 				}
 
 				$is_acknowledged = ($problem['acknowledged'] == EVENT_ACKNOWLEDGED);
+				$can_be_closed = ($triggers[$problem['objectid']]['manual_close'] == ZBX_TRIGGER_MANUAL_CLOSE_ALLOWED && $allowed['close']);
 				$cell_status = new CSpan($value_str);
 				addTriggerValueStyle($cell_status, $value, $value_clock, $is_acknowledged);
+
+				// Create acknowledge link.
+				$problem_update_link = ($allowed['add_comments'] || $allowed['change_severity'] || $allowed['acknowledge']
+						|| $can_be_closed)
+					? (new CLink($is_acknowledged ? _('Yes') : _('No')))
+						->addClass($is_acknowledged ? ZBX_STYLE_GREEN : ZBX_STYLE_RED)
+						->addClass(ZBX_STYLE_LINK_ALT)
+						->onClick('acknowledgePopUp('.json_encode(['eventids' => [$problem['eventid']]]).', this);')
+					: (new CSpan($is_acknowledged ? _('Yes') : _('No')))->addClass(
+						$is_acknowledged ? ZBX_STYLE_GREEN : ZBX_STYLE_RED
+					);
 
 				$hostids_tables[$hostid][$problem['severity']]->addRow([
 					$cell_status,
 					CSeverityHelper::makeSeverityCell((int) $problem['severity'], $problem['name']),
 					zbx_date2age($problem['clock']),
-					'',
+					$problem_update_link,
 					''
 				]);
 			}
