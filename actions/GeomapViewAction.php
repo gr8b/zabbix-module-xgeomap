@@ -50,7 +50,7 @@ class GeomapViewAction extends CControllerWidgetGeoMapView {
 
 		$problems = API::Problem()->get([
 			'output' => ['eventid', 'r_eventid', 'objectid', 'clock', 'ns', 'name', 'acknowledged', 'severity'],
-			'selectAcknowledges' => ['action'],
+			'selectAcknowledges' => ['userid', 'clock', 'message', 'action', 'old_severity', 'new_severity'],
 			'hostids' => array_keys($hostids_problems),
 			'source' => EVENT_SOURCE_TRIGGERS,
 			'object' => EVENT_OBJECT_TRIGGER,
@@ -90,6 +90,16 @@ class GeomapViewAction extends CControllerWidgetGeoMapView {
 			'acknowledge' => CWebUser::checkAccess(CRoleHelper::ACTIONS_ACKNOWLEDGE_PROBLEMS),
 			'close' => CWebUser::checkAccess(CRoleHelper::ACTIONS_CLOSE_PROBLEMS)
 		];
+		$actions = getEventsActionsIconsData($problems, $triggers);
+		$users = [];
+
+		if ($actions['userids']) {
+			$users = API::User()->get([
+				'output' => ['username', 'surname', 'name'],
+				'userids' => array_keys($actions['userids']),
+				'preservekeys' => true
+			]);
+		}
 
 		foreach ($hostids_problems as $hostid => $problems) {
 			if (!array_key_exists($hostid, $hostids_tables)) {
@@ -147,7 +157,7 @@ class GeomapViewAction extends CControllerWidgetGeoMapView {
 					CSeverityHelper::makeSeverityCell((int) $problem['severity'], $problem['name']),
 					zbx_date2age($problem['clock']),
 					$problem_update_link,
-					''
+					makeEventActionsIcons($problem['eventid'], $actions['data'], $users),
 				]);
 			}
 		}
