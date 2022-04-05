@@ -69,8 +69,6 @@ class GeomapViewAction extends CControllerWidgetGeoMapView {
 			'selectGroups' => ['groupid'],
 			'selectHosts' => ['hostid'],
 			'triggerids' => array_unique(array_column($problems, 'objectid')),
-			'monitored' => true,
-			'skipDependent' => true,
 			'preservekeys' => true
 		]);
 
